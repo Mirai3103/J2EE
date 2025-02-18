@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  tomcat:
+    image: tomcat:11-jdk17-temurin
+    container_name: tomcat11
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./target/jakartaee-demo.war:/usr/local/tomcat/webapps/jakartaee-demo.war
+    environment:
+      - JAVA_OPTS=-Djava.security.egd=file:/dev/./urandom
