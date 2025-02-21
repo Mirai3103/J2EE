@@ -1,47 +1,62 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
- pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>  
+    pageEncoding="UTF-8"%>
+<%@ taglib uri="http://displaytag.sf.net" prefix="display" %>
 <!DOCTYPE html>
-<html>
- <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Product List</title>
- </head>
- <body>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+<body class="bg-gray-100 text-gray-900">
 
     <jsp:include page="_header.jsp"></jsp:include>
     <jsp:include page="_menu.jsp"></jsp:include>
 
-    <h3>Product List</h3>
+    <div class="container mx-auto p-6">
+        <h3 class="text-2xl font-semibold mb-4">Product List</h3>
 
-    <p style="color: red;">${errorString}</p>
+        <p class="text-red-500">${errorString}</p>
 
-    <table border="1" cellpadding="5" cellspacing="1" >
-       <tr>
-          <th>Code</th>
-          <th>Name</th>
-          <th>Price</th>
-          <th>Edit</th>
-          <th>Delete</th>
-       </tr>
-       <c:forEach items="${productList}" var="product" >
-          <tr>
-             <td>${product.code}</td>
-             <td>${product.name}</td>
-             <td>${product.price}</td>
-             <td>
-                <a href="editProduct?code=${product.code}">Edit</a>
-             </td>
-             <td>
-                <a href="deleteProduct?code=${product.code}">Delete</a>
-             </td>
-          </tr>
-       </c:forEach>
-    </table>
+        <!-- Hiển thị bảng với DisplayTag -->
+        <div class="overflow-x-auto">
+            <display:table name="productList" pagesize="5" class="min-w-full border border-gray-300 bg-white rounded-lg shadow-md"
+                           requestURI="productList" export="true" defaultsort="1" defaultorder="ascending">
+                
+                <!-- Các cột -->
+                <display:column property="code" title="Code" sortable="true" class="px-4 py-2 border"/>
+                <display:column property="name" title="Name" sortable="true" class="px-4 py-2 border"/>
+                <display:column property="price" title="Price" sortable="true" format="{0,number,#,##0.00}" total="true" class="px-4 py-2 border"/>
 
-    <a href="createProduct" >Create Product</a>
+                <!-- Cột chỉnh sửa -->
+                <display:column title="Edit" class="px-4 py-2 border">
+                    <a href="editProduct?code=${product.code}" class="text-blue-500 hover:underline">Edit</a>
+                </display:column>
+
+                <!-- Cột xóa -->
+                <display:column title="Delete" class="px-4 py-2 border">
+                    <a href="deleteProduct?code=${product.code}" class="text-red-500 hover:underline">Delete</a>
+                </display:column>
+
+                <!-- Cấu hình export (Excel, CSV, XML, PDF) -->
+                <display:setProperty name="export.excel" value="true"/>
+                <display:setProperty name="export.csv" value="true"/>
+                <display:setProperty name="export.xml" value="true"/>
+                <display:setProperty name="export.pdf" value="true"/>
+
+            </display:table>
+        </div>
+
+        <a href="createProduct" class="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Create Product
+        </a>
+    </div>
 
     <jsp:include page="_footer.jsp"></jsp:include>
 
- </body>
+</body>
 </html>
