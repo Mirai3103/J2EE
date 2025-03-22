@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  service-registry:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - my-network
+
+  api-gateway:
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - service-registry
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+    networks:
+      - my-network
+
+  book-service1:
+    build:
+      context: ../book-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - service-registry
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - SERVER_PORT=8081
+      - INSTANCE_ID=1
+    networks:
+      - my-network
+
+  book-service2:
+    build:
+      context: ../book-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      - service-registry
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - SERVER_PORT=8082
+      - INSTANCE_ID=2
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
