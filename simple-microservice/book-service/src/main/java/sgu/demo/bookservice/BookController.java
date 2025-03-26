@@ -5,21 +5,19 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
+import org.springframework.cloud.stream.function.StreamBridge;
 
 @RestController
-        @RequiredArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/api/books")
 public class BookController {
     private final BookRepository bookRepository;
-
+    private final StreamBridge streamBridge;
 
     @Value("${app.version:none}")
     private String version;
@@ -31,18 +29,19 @@ public class BookController {
         System.out.println("Instance ID: " + instanceId);
         return String.format("<h1>Hello from Books instance %s at %s version %s</h1>", instanceId, LocalDate.now(), version);
     }
+
     @GetMapping("/author/{id}")
     public List<Book> getBookByAuthorId(@PathVariable String id) {
         seed();
         Long authorId = Long.parseLong(id);
         // ti le 70% la throw exception
-        if (Math.random() < 0.8 ) {
+        if (Math.random() < 0.8) {
             throw new RuntimeException("Error from Book service");
         }
         return bookRepository.findAllByAuthorId(authorId);
     }
 
-    private void seed(){
+    private void seed() {
         if (bookRepository.count() != 0) {
             return;
         }
@@ -56,5 +55,16 @@ public class BookController {
                     .build();
             bookRepository.save(book);
         }
+    }
+
+    @PostMapping("create")
+    public Book createBook(@RequestBody Book book) {
+        bookRepository.save(book);
+        var event =Event.builder()
+                .eventType("created")
+                .data(book)
+                .build();
+        streamBridge.send("book-topic", event);
+        return book;
     }
 }

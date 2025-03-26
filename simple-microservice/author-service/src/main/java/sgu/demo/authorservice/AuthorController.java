@@ -2,7 +2,10 @@ package sgu.demo.authorservice;
 
 import com.github.javafaker.Faker;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.stream.function.StreamBridge;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,11 +16,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/test")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthorController {
     private final BookClient bookClient;
     private final BookService bookService;
     private final AuthorRepository repository;
-    private final RabbitMQProducer rabbitMQProducer;
+    private final StreamBridge streamBridge;
 
     @GetMapping
     public Map<String, String> hello() {
@@ -36,7 +40,8 @@ public class AuthorController {
     }
     @GetMapping("/all")
     public Map<String, Object> getAllAuthors() {
-        rabbitMQProducer.sendMessage("Hello from Author");
+        String message ="Hello from producer " + System.currentTimeMillis();
+        streamBridge.send("produceMessage-out-0", message);
         var authors = repository.findAll();
         return Map.of("authors", authors);
     }
@@ -57,4 +62,11 @@ public class AuthorController {
         }
 
     }
+
+//    @KafkaListener(topics = "output-topic", groupId = "my-consumer-group")
+//    public void consume(GenericMessage<String> message) {
+//        log.info("Received message via KafkaListener: {}", message.getPayload());
+//    }
+
+
 }
