@@ -36,6 +36,20 @@ services:
       - INSTANCE_ID=1
     networks:
       - my-network
+  author-service:
+    build:
+      context: ../author-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    depends_on:
+      - service-registry
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-registry:8761/eureka/
+      - SERVER_PORT=8083
+      - INSTANCE_ID=3
+    networks:
+      - my-network
 
   book-service2:
     build:
@@ -51,7 +65,14 @@ services:
       - INSTANCE_ID=2
     networks:
       - my-network
-
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - my-network
 networks:
   my-network:
     driver: bridge
