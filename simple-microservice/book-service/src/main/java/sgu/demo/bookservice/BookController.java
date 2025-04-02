@@ -17,7 +17,6 @@ import org.springframework.cloud.stream.function.StreamBridge;
 @RequestMapping("/api/books")
 public class BookController {
     private final BookRepository bookRepository;
-    private final StreamBridge streamBridge;
 
     @Value("${app.version:none}")
     private String version;
@@ -60,11 +59,7 @@ public class BookController {
     @PostMapping("create")
     public Book createBook(@RequestBody Book book) {
         bookRepository.save(book);
-        var event =Event.builder()
-                .eventType("created")
-                .data(book)
-                .build();
-        streamBridge.send("book-topic", event);
+
         return book;
     }
 }
